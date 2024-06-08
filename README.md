@@ -9,7 +9,7 @@ Extract UDISE district &amp; block
 - First you should have python3 and pip installed in your machine
 - Then download and setup the program
 ```
-git clone https://www.github/arunsundaram50/district-block.git
+git clone https://github.com/arunsundaram50/udise-district-block-extraction.git
 cd district-block
 python3 -m venv venv_v1
 source venv_v1/bin/activate
