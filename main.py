@@ -9,6 +9,21 @@ SAVE_INTERMEDIATE_FILES = False
 ADD_PADDING = True
 
 
+import os, subprocess, sys
+venv_path = os.path.expanduser(f"{os.curdir}/venv_v1")
+activate_script = os.path.join(venv_path, "bin", "activate")
+
+
+if os.getenv("VIRTUAL_ENV") != venv_path:
+  if os.path.exists(activate_script):
+    command = f"source {activate_script} && VIRTUAL_ENV={venv_path} python " + " ".join(sys.argv)
+    subprocess.call(command, shell=True, executable='/bin/bash')
+    sys.exit(0)
+  else:
+    print(f"Error: Virtual environment not found at {venv_path}")
+    sys.exit(1)
+
+
 from PIL import Image
 import pandas as pd
 import os, pytesseract, io, base64, traceback, signal
