@@ -1,5 +1,4 @@
-# udise-district-block-extraction
-Extract UDISE district &amp; block
+# A utility to extract UDISE district &amp; block
 
 ## The input is obtained from one of these URLs
 - <https://src.udiseplus.gov.in/home>
