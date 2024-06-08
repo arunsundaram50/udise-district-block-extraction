@@ -2,7 +2,7 @@
 
 # setting up and fine-tuning the program
 MAX_ROWS_TO_PROCESS = 30 # -1 to make it unlimited (i.e. to process all rows)
-MAX_ATTEMPTS_PER_ROW = 3
+MAX_ATTEMPTS_PER_ROW = 5
 INPUT_FILENAME = "11DIstrict and Block updated - UDISE.xlsx"
 OUTPUT_FILENAME = "district_block_output.xlsx"
 SAVE_INTERMEDIATE_FILES = False
