@@ -6,8 +6,8 @@ Extract UDISE district &amp; block
 - <https://kys.udiseplus.gov.in/#/advance_search>
 
 ## To install the program 
-- First you should have python3 and pip installed in your machine
-- Then download and setup the program
+- Ensure you have python3 and pip installed in your machine
+- Then download and setup the program like so:
 ```
 git clone https://github.com/arunsundaram50/udise-district-block-extraction.git
 cd udise-district-block-extraction
@@ -17,7 +17,7 @@ pip3 install -r requirements.txt
 deactivate
 ```
 
-## To run the program
+## To run the program:
 ```
 ./main.py
 ```
