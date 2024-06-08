@@ -24,4 +24,4 @@ source venv_v1/bin/activate
 
 The output will be stored at `district_block_output.xlsx`.
 
-To change the input, output, etc. open `main.py` and change the values under the "setting up and fine-tuning the program" section as needed.
+To change the input, output, the number of rows/records that will be processed, and other changes, open `main.py` and change the values under the "setting up and fine-tuning the program" section as needed.
