@@ -4,6 +4,7 @@ Extract UDISE district &amp; block
 ## The input is obtained from one of these URLs
 - <https://src.udiseplus.gov.in/home>
 - <https://kys.udiseplus.gov.in/#/advance_search>
+We chose the former.
 
 ## To install the program 
 - Ensure you have python3 and pip installed in your machine
