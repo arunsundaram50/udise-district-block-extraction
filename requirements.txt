@@ -1,0 +1,6 @@
+# brew install chromedriver
+pandas
+selenium
+webdriver-manager
+pytesseract
+openpyxl
