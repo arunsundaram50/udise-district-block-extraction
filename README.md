@@ -2,7 +2,7 @@
 Extract UDISE district &amp; block
 
 ## The input is obtained from one of these URLs
-- <https://src.udiseplus.gov.in/home;jsessionid=722157EB55AD128D08F78BA866301DC0>
+- <https://src.udiseplus.gov.in/home>
 - <https://kys.udiseplus.gov.in/#/advance_search>
 
 ## To install the program 
