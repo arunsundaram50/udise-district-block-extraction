@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
 # setting up and fine-tuning the program
+MAX_ROWS_TO_PROCESS = 30 # -1 to make it unlimited (i.e. to process all rows)
+MAX_ATTEMPTS_PER_ROW = 3
 INPUT_FILENAME = "11DIstrict and Block updated - UDISE.xlsx"
 OUTPUT_FILENAME = "district_block_output.xlsx"
 SAVE_INTERMEDIATE_FILES = False
 ADD_PADDING = True
-MAX_ROWS = 10 # -1 to make it unlimited (i.e. to process all rows)
-MAX_ATTEMPTS_PER_ROW = 2
 
 
 from PIL import Image
 import pandas as pd
-import requests, os, pytesseract, time, io, base64
+import os, pytesseract, io, base64, traceback, signal
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -58,8 +58,6 @@ def get_captcha_text(udise_code):
   
   # Use pytesseract to extract text
   text = pytesseract.image_to_string(img)
-  if text == "":
-    raise ValueError(f"No text could be detected for {udise_code}")
   
   if SAVE_INTERMEDIATE_FILES:
     # Save the extracted text to a file
@@ -107,33 +105,69 @@ def submit_form(udise_code, captcha_text):
     district = get_text(district_xpath)
     block = get_text(block_xpath)
     return district, block
-  except Exception as e:
-    print(f"Error processing UDISE Code {udise_code}: {e}")
+  except Exception:
+    print(f"Error processing UDISE Code {udise_code}")
     return None, None
 
 
-if __name__ == "__main__":
+def save_results():
+  df_output = pd.DataFrame(results)
+  df_output.to_excel(OUTPUT_FILENAME, index=False)
+
+
+def signal_handler(signum, frame):
+  save_results()
+  if 'driver' in globals():
+    driver.quit()
+  exit(1)
+
+
+def main():
+  if os.path.exists(OUTPUT_FILENAME):
+    print(f"Output file {OUTPUT_FILENAME} already exists. Please delete or rename it.")
+    exit(1)
+
   if not os.path.exists("captcha"):
     os.makedirs("captcha")
 
   df_input = pd.read_excel(INPUT_FILENAME)
-  results = []
+  home_url = "https://src.udiseplus.gov.in/home"
 
-  for idx, (index, row) in enumerate(df_input.iterrows(), start=1):
-    if MAX_ROWS != -1 and idx>MAX_ROWS:
+  for idx, (_, row) in enumerate(df_input.iterrows(), start=1):
+    if MAX_ROWS_TO_PROCESS != -1 and idx>MAX_ROWS_TO_PROCESS:
       break
-    for _ in range(MAX_ATTEMPTS_PER_ROW):
-      print(f'{idx} of {len(df_input)}')
-      udise_code = row['UDISE Code']
-      home_url = "https://src.udiseplus.gov.in/home"
-      driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    if idx%10==0:
+      save_results()
+    udise_code = row['UDISE Code']
+    for attempt in range(1, MAX_ATTEMPTS_PER_ROW+1):
       driver.get(home_url)
+      if attempt==1:
+        print(f'{idx} of {len(df_input)}')
+      else:
+        print(f'  retry #{attempt}')
       captcha_text = get_captcha_text(udise_code)
+      if captcha_text=="":
+        continue
       district, block = submit_form(udise_code, captcha_text)
-      driver.quit()
       if not (district==None and block==None):
         results.append({"UDISE Code": udise_code, "District": district, "Block": block})
         break
+      elif attempt==MAX_ATTEMPTS_PER_ROW:
+        results.append({"UDISE Code": udise_code, "District": district, "Block": block})
 
-  df_output = pd.DataFrame(results)
-  df_output.to_excel(OUTPUT_FILENAME, index=False)
+  save_results()
+
+
+if __name__ == "__main__":
+  signal.signal(signal.SIGINT, signal_handler)
+  signal.signal(signal.SIGTERM, signal_handler)
+  try:
+    results = []
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    main()
+  except Exception as e:
+    print(f"Unexpected error: {e}")
+    traceback.print_exc()
+  finally:
+    save_results()
+    driver.quit()
