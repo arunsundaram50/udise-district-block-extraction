@@ -18,6 +18,7 @@ pip3 install -r requirements.txt
 
 ## To run the program
 ```
+source venv_v1/bin/activate
 ./main.py
 ```
 
