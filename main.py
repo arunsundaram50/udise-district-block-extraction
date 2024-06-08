@@ -121,7 +121,7 @@ def submit_form(udise_code, captcha_text):
     block = get_text(block_xpath)
     return district, block
   except Exception:
-    print(f"Error processing UDISE Code {udise_code}")
+    print(f"  Error processing UDISE Code {udise_code}")
     return None, None
 
 
@@ -157,7 +157,7 @@ def main():
     for attempt in range(1, MAX_ATTEMPTS_PER_ROW+1):
       driver.get(home_url)
       if attempt==1:
-        print(f'{idx} of {len(df_input)}')
+        print(f'{idx:,} of {len(df_input):,}')
       else:
         print(f'  retry #{attempt}')
       captcha_text = get_captcha_text(udise_code)
