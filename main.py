@@ -125,7 +125,6 @@ def submit_form(udise_code, captcha_text):
     block = get_text(block_xpath)
     return district, block
   except Exception:
-    print(f"  Error processing UDISE Code {udise_code}")
     return None, None
 
 
@@ -173,7 +172,7 @@ def main():
         break
       elif attempt==MAX_ATTEMPTS_PER_ROW:
         results.append({"UDISE Code": udise_code, "District": district, "Block": block})
-      print('')
+    print('')
 
   save_results()
 
