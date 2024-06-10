@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 
 import argparse
-ap = argparse.ArgumentParser("UDISE scrapper")
+ap = argparse.ArgumentParser("UDISE district and block scrapper")
 ap.add_argument("-s", "--start_from", type=int, help="start from", required=False, default=0)
 ap.add_argument("-m", "--max", type=int, help="maximum rows to process", required=False, default=-1)
+ap.add_argument("-i", "--input", type=str, help="input filename", required=False, default="11DIstrict and Block updated - UDISE.xlsx")
+ap.add_argument("-a", "--attempts", type=int, help="max number of attempts when processing a row fails", required=False, default=5)
+ap.add_argument("-w", "--wait", type=int, help="max number of seconds to wait for captcha to appear", required=False, default=3)
 args = ap.parse_args()
 
 
 # setting up and fine-tuning the program
 MAX_ROWS_TO_PROCESS = args.max # -1 to make it unlimited (i.e. to process all rows)
 START_FROM = args.start_from
-MAX_ATTEMPTS_PER_ROW = 5
-SECONDS_TO_WAIT_FOR_CAPTCHA = 3
-INPUT_FILENAME = "11DIstrict and Block updated - UDISE.xlsx"
+MAX_ATTEMPTS_PER_ROW = args.attempts
+SECONDS_TO_WAIT_FOR_CAPTCHA = args.wait
+INPUT_FILENAME = args.input
 OUTPUT_FILENAME = f"district_block_output_{START_FROM}-{START_FROM+MAX_ROWS_TO_PROCESS}.xlsx"
 SAVE_INTERMEDIATE_FILES = False
 ADD_PADDING = True
