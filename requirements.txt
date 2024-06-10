@@ -1,4 +1,5 @@
 # brew install chromedriver
+# brew install tesseract
 pandas
 selenium
 webdriver-manager

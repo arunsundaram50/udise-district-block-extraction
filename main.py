@@ -25,8 +25,8 @@ import os, subprocess, sys
 venv_path = os.path.expanduser(f"{os.curdir}/venv_v1")
 activate_script = os.path.join(venv_path, "bin", "activate")
 
-
-if os.getenv("VIRTUAL_ENV") != venv_path:
+SKIP_AUTO_VENV = False # Set to True for not spawning a new process and when already running in venv. This is useful for debugging
+if not SKIP_AUTO_VENV and os.getenv("VIRTUAL_ENV") != venv_path:
   if os.path.exists(activate_script):
     command = f"source {activate_script} && VIRTUAL_ENV={venv_path} python " + " ".join(sys.argv)
     subprocess.call(command, shell=True, executable='/bin/bash')
@@ -94,6 +94,7 @@ def get_captcha_text(udise_code):
     
     return text
   except:
+    traceback.print_exc()
     return ""
 
 
