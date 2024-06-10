@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 
+import argparse
+ap = argparse.ArgumentParser("UDISE scrapper")
+ap.add_argument("-s", "--start_from", type=int, help="start from", required=False, default=0)
+ap.add_argument("-m", "--max", type=int, help="maximum rows to process", required=False, default=-1)
+args = ap.parse_args()
+
+
 # setting up and fine-tuning the program
-MAX_ROWS_TO_PROCESS = -1 # -1 to make it unlimited (i.e. to process all rows)
+MAX_ROWS_TO_PROCESS = args.max # -1 to make it unlimited (i.e. to process all rows)
+START_FROM = args.start_from
 MAX_ATTEMPTS_PER_ROW = 5
 SECONDS_TO_WAIT_FOR_CAPTCHA = 3
 INPUT_FILENAME = "11DIstrict and Block updated - UDISE.xlsx"
-OUTPUT_FILENAME = "district_block_output.xlsx"
+OUTPUT_FILENAME = f"district_block_output_{START_FROM}-{START_FROM+MAX_ROWS_TO_PROCESS}.xlsx"
 SAVE_INTERMEDIATE_FILES = False
 ADD_PADDING = True
 
@@ -152,7 +160,9 @@ def main():
   home_url = "https://src.udiseplus.gov.in/home"
 
   for idx, (_, row) in enumerate(df_input.iterrows(), start=1):
-    if MAX_ROWS_TO_PROCESS != -1 and idx>MAX_ROWS_TO_PROCESS:
+    if idx<START_FROM:
+      continue
+    if MAX_ROWS_TO_PROCESS != -1 and (idx-START_FROM)>MAX_ROWS_TO_PROCESS:
       break
     if idx%50==0:
       save_results()
