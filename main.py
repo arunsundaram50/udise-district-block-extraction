@@ -6,7 +6,7 @@ ap.add_argument("-s", "--start_from", type=int, help="start from", required=Fals
 ap.add_argument("-m", "--max", type=int, help="maximum rows to process", required=False, default=-1)
 ap.add_argument("-i", "--input", type=str, help="input filename", required=False, default="11DIstrict and Block updated - UDISE.xlsx")
 ap.add_argument("-a", "--attempts", type=int, help="max number of attempts when processing a row fails", required=False, default=5)
-ap.add_argument("-w", "--wait", type=int, help="max number of seconds to wait for captcha to appear", required=False, default=3)
+ap.add_argument("-w", "--wait", type=int, help="max number of seconds to wait for tables contents to appear after submitting the form", required=False, default=3)
 args = ap.parse_args()
 
 
@@ -14,7 +14,7 @@ args = ap.parse_args()
 MAX_ROWS_TO_PROCESS = args.max # -1 to make it unlimited (i.e. to process all rows)
 START_FROM = args.start_from
 MAX_ATTEMPTS_PER_ROW = args.attempts
-SECONDS_TO_WAIT_FOR_CAPTCHA = args.wait
+SECONDS_TO_WAIT_FOR_TABLE_CONTENTS = args.wait
 INPUT_FILENAME = args.input
 OUTPUT_FILENAME = f"district_block_output_{START_FROM}-{START_FROM+MAX_ROWS_TO_PROCESS}.xlsx"
 SAVE_INTERMEDIATE_FILES = False
@@ -132,7 +132,7 @@ def submit_form(udise_code, captcha_text):
     submit_button = driver.find_element(By.XPATH, submit_button_xpath)
     submit_button.click()
 
-    WebDriverWait(driver, SECONDS_TO_WAIT_FOR_CAPTCHA).until(EC.presence_of_element_located((By.XPATH, table_contents_xpath)))
+    WebDriverWait(driver, SECONDS_TO_WAIT_FOR_TABLE_CONTENTS).until(EC.presence_of_element_located((By.XPATH, table_contents_xpath)))
     district = get_text(district_xpath)
     block = get_text(block_xpath)
     return district, block
