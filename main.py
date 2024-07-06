@@ -118,6 +118,9 @@ def submit_form(udise_code, captcha_text):
   table_contents_xpath = "//table[@id='example']/tbody/tr[1]/td[4]"
   district_xpath = "//table[@id='example']/tbody/tr[1]/td[4]/text()[3]"
   block_xpath = "//table[@id='example']/tbody/tr[1]/td[4]/text()[5]"
+  state_management_xpath  ="substring-after(//b[text()='State Mgmt.']/following-sibling::text()[1], ':')"
+  national_management_xpath = "substring-after(//b[text()='State Mgmt.']/following-sibling::text()[3], ': ')"
+  location_xpath = "substring-after(//b[text()='State Mgmt.']/following-sibling::text()[9], ': ')"
 
   try:
     # Enter text into the search input field
@@ -135,9 +138,12 @@ def submit_form(udise_code, captcha_text):
     WebDriverWait(driver, SECONDS_TO_WAIT_FOR_CAPTCHA).until(EC.presence_of_element_located((By.XPATH, table_contents_xpath)))
     district = get_text(district_xpath)
     block = get_text(block_xpath)
-    return district, block
+    state_management = get_text(state_management_xpath)
+    national_management = get_text(national_management_xpath)
+    location = get_text(location_xpath)
+    return district, block, state_management, national_management, location
   except Exception:
-    return None, None
+    return None, None, None, None, None
 
 
 def save_results():
@@ -180,12 +186,12 @@ def main():
       captcha_text = get_captcha_text(udise_code)
       if captcha_text=="":
         continue
-      district, block = submit_form(udise_code, captcha_text)
+      district, block, state_management, national_management, location = submit_form(udise_code, captcha_text)
       if not (district==None and block==None):
-        results.append({"UDISE Code": udise_code, "District": district, "Block": block})
+        results.append({"UDISE Code": udise_code, "District": district, "Block": block, "State Mgmt": state_management, "National Mgmt": national_management, "Location": location})
         break
       elif attempt==MAX_ATTEMPTS_PER_ROW:
-        results.append({"UDISE Code": udise_code, "District": district, "Block": block})
+        results.append({"UDISE Code": udise_code, "District": district, "Block": block, "State Mgmt": state_management, "National Mgmt": national_management, "Location": location})
     print('')
 
   save_results()

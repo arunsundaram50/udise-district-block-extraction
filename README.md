@@ -29,7 +29,11 @@ Instead of processing everything, you can choose to process certain segment of t
 ```
 ./main.py -m 1000 -s 5000
 ```
-In this case the program will start from row# 5000 and process up to 1000 rows. The output file name will be suffixed "_5000-6000.xlsx" in this case.
+In this case the program will:
+- start from row# 5000 and process up to 1000 rows
+- the output file name will be suffixed "_5000-6000.xlsx"
+
+Instead of running `./main.py` which will process all inputs sequentically, segmenting allows parallel execution by running mulitple instances of `/main.py` with approproate arguments. For example, you can divide the inputs into 10 segments which will help complete the conversion of the entire input set by 10 times. What limits the parallel execution is the amount of local resources avaliable (i.e. where the program is running) and the server limit, if any.
 
 To control other behaviors of the program, you can pass additional arguments. To see the accepted arguments consult the help output like so:
 ```
