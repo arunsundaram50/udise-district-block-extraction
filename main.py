@@ -8,7 +8,7 @@ ap.add_argument("-i", "--input", type=str, help="input filename", required=False
 ap.add_argument("-a", "--attempts", type=int, help="max number of attempts when processing a row fails", required=False, default=10)
 ap.add_argument("-w", "--wait", type=int, help="max number of seconds to wait for tables contents to appear after submitting the form", required=False, default=3)
 ap.add_argument("-t", "--trace_level", type=int, help="trace level", required=False, default=0)
-ap.add_argument("-h", "--headless", type=int, help="headless: don't show the GUI", required=False, default=1)
+ap.add_argument("-g", "--gui_less", type=int, help="gui_less: don't show the GUI", required=False, default=1)
 args = ap.parse_args()
 
 
@@ -22,7 +22,7 @@ OUTPUT_FILENAME = f"district_block_output_{START_FROM}-{START_FROM+MAX_ROWS_TO_P
 SAVE_INTERMEDIATE_FILES = False
 ADD_PADDING = True
 TRACE_LEVEL = args.trace_level
-HEADLESS = args.headless==1
+HEADLESS = args.gui_less==1
 
 
 import os, subprocess, sys
