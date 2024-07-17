@@ -23,6 +23,9 @@ HEADLESS = args.show_gui==0
 
 # fine-tune the program
 OUTPUT_FILENAME = f"district_block_output_{START_FROM}-{START_FROM+MAX_ROWS_TO_PROCESS}.xlsx"
+if START_FROM==0 and MAX_ROWS_TO_PROCESS==-1:
+  OUTPUT_FILENAME = f"district_block_output.xlsx"
+
 SECONDS_TO_WAIT_FOR_NEW_TAB = 3
 SECONDS_TO_WAIT_FOR_CAPTHA_IMAGE = 2
 SAVE_INTERMEDIATE_FILES = False
@@ -210,7 +213,10 @@ def main():
     for attempt in range(1, MAX_ATTEMPTS_PER_ROW+1):
       driver.get(home_url)
       if attempt==1:
-        print(f'{row_pos-START_FROM:,}): {row_pos:,} of {START_FROM} to {START_FROM+MAX_ROWS_TO_PROCESS:,} out of {len(df_input):,}', end='')
+        if START_FROM==0 and MAX_ROWS_TO_PROCESS==-1:
+          print(f'{row_pos-START_FROM:,} of {len(df_input):,}', end='')
+        else:
+          print(f'{row_pos-START_FROM:,}): {row_pos:,} of {START_FROM} to {START_FROM+MAX_ROWS_TO_PROCESS:,} out of {len(df_input):,}', end='')
       else:
         print('.', end='')
       captcha_text = get_captcha_text(udise_code)
