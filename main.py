@@ -191,6 +191,37 @@ def signal_handler(signum, frame):
   exit(1)
 
 
+def fill_blanks_in_output(output_filename):
+  df_input = pd.read_excel(output_filename)
+  home_url = "https://src.udiseplus.gov.in/home"
+
+  for pos, row in df_input.iterrows():
+    district =  str(row['District'])
+    if district != 'nan':
+      continue
+
+    udise_code = row['UDISE Code']
+    print(f'{pos}) {udise_code}')
+    driver.get(home_url)
+    captcha_text = get_captcha_text(udise_code)
+    if captcha_text=="":
+      continue
+
+    district, block, state_management, national_management, location = submit_form(udise_code, captcha_text)
+    if not (district==None and block==None):
+      print(f'{udise_code} fixed')
+      df_input.at[pos, 'UDISE Code'] = udise_code
+      df_input.at[pos, 'District'] = district
+      df_input.at[pos, 'Block'] = block
+      df_input.at[pos, 'State Mgmt'] = state_management
+      df_input.at[pos, 'National Mgmt'] = national_management
+      df_input.at[pos, 'Location'] = location
+    else:
+      print(f'{udise_code} values are still blank')
+  
+  df_input.to_excel(output_filename, index=False)
+
+
 def main():
   if os.path.exists(OUTPUT_FILENAME):
     print(f"Output file {OUTPUT_FILENAME} already exists. Please delete or rename it.")
@@ -251,6 +282,7 @@ if __name__ == "__main__":
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
 
     main()
+    fill_blanks_in_output(OUTPUT_FILENAME)
   except Exception as e:
     print(f"Unexpected error: {e}")
     traceback.print_exc()
