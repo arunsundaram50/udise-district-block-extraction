@@ -8,28 +8,32 @@ ap.add_argument("-i", "--input", type=str, help="input filename", required=False
 ap.add_argument("-a", "--attempts", type=int, help="max number of attempts when processing a row fails", required=False, default=10)
 ap.add_argument("-w", "--wait", type=int, help="max number of seconds to wait for tables contents to appear after submitting the form", required=False, default=3)
 ap.add_argument("-t", "--trace_level", type=int, help="trace level", required=False, default=0)
-ap.add_argument("-g", "--gui_less", type=int, help="gui_less: don't show the GUI", required=False, default=1)
+ap.add_argument("-g", "--show_gui", type=int, help="show_gui: show the GUI", required=False, default=0)
 args = ap.parse_args()
 
 
-# setting up and fine-tuning the program
+# setup run parameters for the program
 MAX_ROWS_TO_PROCESS = args.max # -1 to make it unlimited (i.e. to process all rows)
 START_FROM = args.start_from
 MAX_ATTEMPTS_PER_ROW = args.attempts
 SECONDS_TO_WAIT_FOR_TABLE_CONTENTS = args.wait
 INPUT_FILENAME = args.input
+TRACE_LEVEL = args.trace_level
+HEADLESS = args.show_gui==0
+
+# fine-tune the program
 OUTPUT_FILENAME = f"district_block_output_{START_FROM}-{START_FROM+MAX_ROWS_TO_PROCESS}.xlsx"
+SECONDS_TO_WAIT_FOR_NEW_TAB = 3
+SECONDS_TO_WAIT_FOR_CAPTHA_IMAGE = 2
 SAVE_INTERMEDIATE_FILES = False
 ADD_PADDING = True
-TRACE_LEVEL = args.trace_level
-HEADLESS = args.gui_less==1
 
 
 import os, subprocess, sys
 venv_path = os.path.expanduser(f"{os.curdir}/venv_v1")
 activate_script = os.path.join(venv_path, "bin", "activate")
 
-SKIP_AUTO_VENV = False # Set to True for not spawning a new process and when already running in venv. This is useful for debugging
+SKIP_AUTO_VENV = True # Set to True for not spawning a new process and when already running in venv. This is useful for debugging
 if not SKIP_AUTO_VENV and os.getenv("VIRTUAL_ENV") != venv_path:
   if os.path.exists(activate_script):
     command = f"source {activate_script} && VIRTUAL_ENV={venv_path} python " + " ".join(sys.argv)
@@ -57,8 +61,8 @@ def get_captcha_text(udise_code):
     captcha_img_xpath = "//img[@id='captchaId']"
     png_img_path = f"captcha/{udise_code}.png"
     
-    # Wait for the CAPTCHA image to be present
-    captcha_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, captcha_img_xpath)))
+    # Wait for the CAPTCHA image to appear
+    captcha_element = WebDriverWait(driver, SECONDS_TO_WAIT_FOR_CAPTHA_IMAGE).until(EC.presence_of_element_located((By.XPATH, captcha_img_xpath)))
     
     # Get the CAPTCHA image source in base64
     captcha_base64 = driver.execute_script("""
@@ -150,9 +154,10 @@ def submit_form(udise_code, captcha_text):
     location_link = driver.find_element(By.XPATH, location_link_xpath)
     original_window = driver.current_window_handle
     location_link.click()
-    # Wait for the new tab to open and switch to it
-    WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(2))
 
+    # Wait for the new tab to open...
+    WebDriverWait(driver, SECONDS_TO_WAIT_FOR_NEW_TAB).until(EC.number_of_windows_to_be(2))
+    # ...and switch to it
     for window_handle in driver.window_handles:
       if window_handle != original_window:
         driver.switch_to.window(window_handle)
@@ -160,13 +165,13 @@ def submit_form(udise_code, captcha_text):
     
     location = get_text(location_xpath)
 
-    # Close the new tab
+    # Close the new tab and get back to the original tab
     driver.close()
     driver.switch_to.window(original_window)
 
     return district, block, state_management, national_management, location
   except Exception as e:
-    if TRACE_LEVEL>=2:
+    if TRACE_LEVEL>=1:
       traceback.print_exc()
     return None, None, None, None, None
 
@@ -194,18 +199,18 @@ def main():
   df_input = pd.read_excel(INPUT_FILENAME)
   home_url = "https://src.udiseplus.gov.in/home" # example UDISE CODE: 07080317203
 
-  for idx, (_, row) in enumerate(df_input.iterrows(), start=1):
-    if idx<START_FROM:
+  for row_pos, (_, row) in enumerate(df_input.iterrows(), start=1):
+    if row_pos<START_FROM:
       continue
-    if MAX_ROWS_TO_PROCESS != -1 and (idx-START_FROM)>MAX_ROWS_TO_PROCESS:
+    if MAX_ROWS_TO_PROCESS != -1 and (row_pos-START_FROM)>MAX_ROWS_TO_PROCESS:
       break
-    if idx%50==0:
+    if row_pos%50==0:
       save_results()
     udise_code = row['UDISE Code']
     for attempt in range(1, MAX_ATTEMPTS_PER_ROW+1):
       driver.get(home_url)
       if attempt==1:
-        print(f'{idx-START_FROM+1:,}): {idx:,} of {START_FROM} to {START_FROM+MAX_ROWS_TO_PROCESS:,} out of {len(df_input):,}', end='')
+        print(f'{row_pos-START_FROM:,}): {row_pos:,} of {START_FROM} to {START_FROM+MAX_ROWS_TO_PROCESS:,} out of {len(df_input):,}', end='')
       else:
         print('.', end='')
       captcha_text = get_captcha_text(udise_code)
@@ -217,8 +222,10 @@ def main():
         break
       elif attempt==MAX_ATTEMPTS_PER_ROW:
         results.append({"UDISE Code": udise_code, "District": district, "Block": block, "State Mgmt": state_management, "National Mgmt": national_management, "Location": location})
+      else: # an exception occured
+        pass
     print('')
-    if TRACE_LEVEL>=1:
+    if TRACE_LEVEL>=2:
       print(district, block, state_management, national_management, location, sep=" | ")
 
   save_results()
