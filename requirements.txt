@@ -1,5 +1,13 @@
+# MAC
 # brew install chromedriver
 # brew install tesseract
+
+# Linux
+# sudo apt install -y tesseract-ocr
+# sudo apt install -y tesseract-ocr-<langcode>
+# sudo apt install -y tesseract-ocr-fra
+# tesseract --version
+
 pandas
 selenium
 webdriver-manager
