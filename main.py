@@ -30,7 +30,6 @@ SECONDS_TO_WAIT_FOR_NEW_TAB = 3
 SECONDS_TO_WAIT_FOR_CAPTHA_IMAGE = 2
 SAVE_INTERMEDIATE_FILES = False
 ADD_PADDING = True
-driver = None
 
 import os, subprocess, sys
 venv_path = os.path.expanduser(f"{os.curdir}/venv_v1")
@@ -60,6 +59,7 @@ from selenium.webdriver.chrome.options import Options
 
 
 def get_captcha_text(udise_code):
+  global driver
   try:
     captcha_img_xpath = "//img[@id='captchaId']"
     png_img_path = f"captcha/{udise_code}.png"
@@ -111,6 +111,7 @@ def get_captcha_text(udise_code):
 
 
 def get_text(xpath):
+  global driver
   script = f"""
       var xpath = "{xpath}";
       var result = document.evaluate(xpath, document, null, XPathResult.STRING_TYPE, null);
@@ -124,6 +125,7 @@ def get_text(xpath):
 
 
 def submit_form(udise_code, captcha_text):
+  global driver
   search_input_xpath = "//input[@id='search']"
   captcha_input_xpath = "//input[@name='captcha']"
   submit_button_xpath = "//button[@type='submit']"  #"//button[@id='homeSearchBtn']"
@@ -185,6 +187,7 @@ def save_results():
 
 
 def signal_handler(signum, frame):
+  global driver
   save_results()
   if 'driver' in globals():
     driver.quit()
@@ -192,6 +195,7 @@ def signal_handler(signum, frame):
 
 
 def fill_blanks_in_output(output_filename):
+  global driver
   df_input = pd.read_excel(output_filename)
   home_url = "https://src.udiseplus.gov.in/home"
 
@@ -223,6 +227,7 @@ def fill_blanks_in_output(output_filename):
 
 
 def main():
+  global driver
   if os.path.exists(OUTPUT_FILENAME):
     print(f"Output file {OUTPUT_FILENAME} already exists. Please delete or rename it.")
     exit(1)
