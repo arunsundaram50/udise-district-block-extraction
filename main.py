@@ -30,7 +30,7 @@ SECONDS_TO_WAIT_FOR_NEW_TAB = 3
 SECONDS_TO_WAIT_FOR_CAPTHA_IMAGE = 2
 SAVE_INTERMEDIATE_FILES = False
 ADD_PADDING = True
-
+driver = None
 
 import os, subprocess, sys
 venv_path = os.path.expanduser(f"{os.curdir}/venv_v1")
@@ -269,6 +269,7 @@ def main():
 
 
 if __name__ == "__main__":
+  global driver
   signal.signal(signal.SIGINT, signal_handler)
   signal.signal(signal.SIGTERM, signal_handler)
   try:
